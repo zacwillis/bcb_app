@@ -1,0 +1,25 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  client_id: 1
+  location_id: 1
+  vehicle_id: 1
+  source_id: 1
+  quantity: 1
+  start_date: 2022-05-24 21:03:28
+  job_type: MyString
+  status: MyString
+  address: MyString
+  price: MyString
+
+two:
+  client_id: 1
+  location_id: 1
+  vehicle_id: 1
+  source_id: 1
+  quantity: 1
+  start_date: 2022-05-24 21:03:28
+  job_type: MyString
+  status: MyString
+  address: MyString
+  price: MyString

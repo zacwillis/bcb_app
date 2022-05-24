@@ -1,4 +1,9 @@
 Rails.application.routes.draw do
+  resources :vehicles
+  resources :customers
+  resources :jobs
+  resources :locations
+  resources :clients
   root to: "pages#home"
 
   get "/up/", to: "up#index", as: :up
