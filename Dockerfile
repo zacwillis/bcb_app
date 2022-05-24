@@ -1,5 +1,4 @@
 FROM ruby:3.1.2-slim-bullseye AS assets
-LABEL maintainer="Nick Janetakis <nick.janetakis@gmail.com>"
 
 WORKDIR /app
 
@@ -11,15 +10,18 @@ RUN bash -c "set -o pipefail && apt-get update \
   && apt-get update && apt-get install -y --no-install-recommends nodejs yarn \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man \
   && apt-get clean \
-  && useradd --create-home ruby \
-  && mkdir /node_modules && chown ruby:ruby -R /node_modules /app"
+  && useradd --create-home appuser \
+  && mkdir /node_modules && chown appuser:appuser -R /node_modules /app"
 
-USER ruby
+USER appuser
 
-COPY --chown=ruby:ruby Gemfile* ./
+# install rails
+RUN gem install rails --version 7.0.3
+
+COPY --chown=appuser:appuser Gemfile* ./
 RUN bundle install --jobs "$(nproc)"
 
-COPY --chown=ruby:ruby package.json *yarn* ./
+COPY --chown=appuser:appuser package.json *yarn* ./
 RUN yarn install
 
 ARG RAILS_ENV="production"
@@ -27,19 +29,17 @@ ARG NODE_ENV="production"
 ENV RAILS_ENV="${RAILS_ENV}" \
     NODE_ENV="${NODE_ENV}" \
     PATH="${PATH}:/home/ruby/.local/bin:/node_modules/.bin" \
-    USER="ruby"
+    USER="appuser"
 
-COPY --chown=ruby:ruby . .
+COPY --chown=appuser:appuser . .
 
-RUN if [ "${RAILS_ENV}" != "development" ]; then \
-  SECRET_KEY_BASE=dummyvalue rails assets:precompile; fi
+RUN rails assets:precompile
 
 CMD ["bash"]
 
 ###############################################################################
 
 FROM ruby:3.1.2-slim-bullseye AS app
-LABEL maintainer="Nick Janetakis <nick.janetakis@gmail.com>"
 
 WORKDIR /app
 
@@ -47,22 +47,22 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends build-essential curl libpq-dev \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man \
   && apt-get clean \
-  && useradd --create-home ruby \
-  && chown ruby:ruby -R /app
+  && useradd --create-home appuser \
+  && chown appuser:appuser -R /app
 
-USER ruby
+USER appuser
 
-COPY --chown=ruby:ruby bin/ ./bin
+COPY --chown=appuser:appuser bin/ ./bin
 RUN chmod 0755 bin/*
 
 ARG RAILS_ENV="production"
 ENV RAILS_ENV="${RAILS_ENV}" \
     PATH="${PATH}:/home/ruby/.local/bin" \
-    USER="ruby"
+    USER="appuser"
 
-COPY --chown=ruby:ruby --from=assets /usr/local/bundle /usr/local/bundle
-COPY --chown=ruby:ruby --from=assets /app/public /public
-COPY --chown=ruby:ruby . .
+COPY --chown=appuser:appuser --from=assets /usr/local/bundle /usr/local/bundle
+COPY --chown=appuser:appuser --from=assets /app/public /public
+COPY --chown=appuser:appuser . .
 
 ENTRYPOINT ["/app/bin/docker-entrypoint-web"]
 
