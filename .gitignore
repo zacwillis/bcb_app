@@ -31,3 +31,4 @@ yarn-debug.log*
 .env*
 !.env.example
 docker-compose.override.yml
+/config/master.key
