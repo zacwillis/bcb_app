@@ -33,7 +33,7 @@ ENV RAILS_ENV="${RAILS_ENV}" \
 
 COPY --chown=appuser:appuser . .
 
-RUN rails assets:precompile
+RUN rake assets:precompile RAILS_ENV=$environment
 
 CMD ["bash"]
 
